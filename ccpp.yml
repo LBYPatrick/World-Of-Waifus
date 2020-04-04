@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: make_cmake
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+    - name: make
+      run: make
+    - name: dist
+      run: make dist
+    - name: run
+      run: ./World_Of_Waifus
+        
