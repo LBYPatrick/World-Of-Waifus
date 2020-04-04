@@ -2,12 +2,15 @@
 
 #include <utility>
 
+Utils *Utils::instance = 0;
+
 Utils::Utils() {
     std::ios_base::sync_with_stdio(false);
 }
 
 Utils * Utils::getInstance() {
-    if(instance == nullptr) {
+
+    if(!instance) {
         instance = new Utils;
     }
 
