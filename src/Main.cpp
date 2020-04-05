@@ -23,6 +23,7 @@ string getModPath() {
 int main(int argc, char *const argv[]) {
 
 
+    vector<ThreadHolder> threadPool;
     //Get WOWS Mod Path
 
     string modPath = getModPath();
@@ -34,33 +35,54 @@ int main(int argc, char *const argv[]) {
 
     //Get Mods List & Load
     if(fs::exists("mods")) {
+
+        int numMods = Utils::getFolderList("mods").size();
+
         for(auto & i : fs::directory_iterator("mods")) {
 
-            string source = i.path().u8string(),
-                   target = modPath;
+            bool isDone = false;
 
-            thread([&] {
-                Utils::markLink(source,target);
-            }).join();
+            string source = i.path().u8string(),
+                    target = modPath;
+
+            Utils::printLn(Utils::truncateDouble(Utils::getElaspedTimeSeconds(), 2)
+                           + "s  "
+                           + "Mounting "
+                           + Utils::SubString(source, source.rfind("\\") + 1)
+                           + ".");
+
+
+            /*
+            thread t([&] {
+
+                Utils::markLink(source, target);
+
+                isDone = true;
+            });
+             */
+
+            threadPool.push_back({thread([&] {Utils::markLink(source, target);isDone = true;}),isDone});
+
+            threadPool.back().t.join();
+
         }
     }
 
-    /*
-    auto * o = new vector<string>();
+    while(true) {
 
-    Utils::runCmd("echo haha", o);
-    
-    for(const string i : *o) {
-        Utils::print(i + "\n");
+        bool isAllDone = true;
+
+        for(auto & i : threadPool) {
+            if(i.isDone == false) {
+                isAllDone = false;
+                break;
+            }
+        }
+
+        if(isAllDone) break;
     }
-    */
 
-    string test = "ABCDE";
-
-    string source = R"(test)";
-    string target = R"(B)";
-
-    Utils::markLink(source,target);
+    Utils::printLn(Utils::truncateDouble(Utils::getElaspedTimeSeconds(), 2) + "s  " + "All done.");
 
     system("pause");
     return 0;

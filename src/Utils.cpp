@@ -4,6 +4,32 @@ Utils *Utils::instance = 0;
 
 Utils::Utils() {
     std::ios_base::sync_with_stdio(false);
+    current_time = new timer::time_point<std::chrono::system_clock>();
+    *current_time = timer::system_clock::now();
+}
+
+timer::duration<double> Utils::getElaspedTime() {
+
+    return timer::system_clock::now() - (*(getInstance()->current_time));
+}
+
+double Utils::getElaspedTimeSeconds() {
+    return getElaspedTime().count();
+}
+
+string Utils::truncateDouble(double value, int decimal) {
+
+    if (decimal < 0) {
+        decimal = 0;
+    }
+    else if (decimal > 6) {
+        decimal = 6;
+    }
+
+    string out = to_string(value);
+
+
+    return out.substr(0, out.length() - (6 - decimal));
 }
 
 Utils * Utils::getInstance() {
@@ -19,7 +45,18 @@ bool Utils::runCmd(string cmd) {
     return runCmd(std::move(cmd), nullptr);
 }
 
+bool Utils::runCmdAsync(string cmd) {
+
+    system(("cmd /q /c \"" + cmd + "\"").c_str());
+
+    return true;
+}
+
 bool Utils::runCmd(string cmd, vector<string> * outputBuffer) {
+
+    if(IS_DEBUG) {
+        outputBuffer = new vector<string>();
+    }
 
     FILE * handler;
 	string long_buffer;
@@ -53,36 +90,38 @@ bool Utils::runCmd(string cmd, vector<string> * outputBuffer) {
 	}
 	pclose(handler);
 
+	if(IS_DEBUG) {
+	    for(auto & i : *outputBuffer) {
+	        Utils::printLn(i);
+	    }
+	}
+
 	return true;
 }
 
-void Utils::markLink(string & entryPath,string &sourcePath, string &targetPath) {
+void Utils::markLink(string & entryPath,string &sourcePath, string &targetPath, vector<string> & queue) {
     for(auto & i : fs::directory_iterator(sourcePath)) {
+            int len = entryPath.length();
 
-        int len = entryPath.length();
+            string source = fixPath(i.path().u8string());
+            string target = fixPath(targetPath + SubString(source,len));
 
-        string source = fixPath(i.path().u8string());
-        string target = fixPath(targetPath + SubString(source,len));
+            if(!fs::exists(target) && !i.is_directory()) {
 
-        if(!fs::exists(target) && !i.is_directory()) {
-
-            thread([&] {
-                runCmd("mklink /h " + target + " " + source);
-                //print(source + ", " + target + "\n");
-            }).join();
-        }
-
-
-        //If the current one is a directory, recursively do it as well
-        if(i.is_directory()) {
-            string path = i.path().u8string();
-
-            if(!fs::exists(target)) {
-                fs::create_directory(target);
+                //pushCmdQueue("copy " + source  + " " + target,queue);
+                pushCmdQueue("mklink /h " + target + " " + source,queue);
             }
 
-            markLink(entryPath,path,targetPath);
-        }
+
+            //If the current one is a directory, recursively do it as well
+            if(i.is_directory()) {
+
+                if(!fs::exists(target)) {
+                    fs::create_directory(target);
+                }
+
+                markLink(entryPath,source,targetPath,queue);
+            }
     }
 }
 
@@ -90,8 +129,11 @@ bool Utils::markLink(string sourcePath, string targetPath) {
 
     sourcePath = fixPath(sourcePath);
 
+    vector<string> queue;
+
     if(fs::exists(sourcePath)) {
-        markLink(sourcePath, sourcePath, targetPath);
+        markLink(sourcePath, sourcePath, targetPath,queue);
+        flushCmdQueue(queue);
         return true;
     }
     return false;
@@ -166,4 +208,43 @@ string Utils::SubString(string str, int start, int end) {
     }
 
     return str.substr(start, end-start+1);
+}
+
+void Utils::pushCmdQueue(string cmd) {
+    pushCmdQueue(cmd,getInstance()->cmdQueue);
+}
+
+void Utils::pushCmdQueue(string cmd, vector<string> & queue) {
+    queue.push_back(cmd);
+}
+
+
+void Utils::flushCmdQueue(vector<string> & queue) {
+    if(queue.size() == 0) {
+        return;
+    }
+    else {
+
+        string cmd = queue[0];
+
+        for(int i = 1; i < queue.size(); ++i) {
+
+            if((cmd + queue[i]).size() >= (8000 - 4)) {
+                runCmd(cmd.c_str());
+                cmd = queue[i];
+            }
+            else {
+                cmd += " && "  + queue[i];
+            }
+        }
+
+        if(cmd != "") runCmd(cmd.c_str());
+
+
+        queue.clear();
+    }
+}
+
+void Utils::flushCmdQueue() {
+   flushCmdQueue(getInstance()->cmdQueue);
 }

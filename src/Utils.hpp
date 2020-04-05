@@ -14,8 +14,15 @@ private:
 
     static Utils * instance;
 
-    static void markLink(string &entryPath, string &sourcePath, string &targetPath);
+    std::chrono::time_point<std::chrono::system_clock> * current_time;
+
+    vector<string> cmdQueue;
+
+    static void markLink(string &entryPath, string &sourcePath, string &targetPath, vector<string> & queue);
 public:
+
+    static void pushCmdQueue(string cmd);
+    static void flushCmdQueue();
 
     //Console
     static void print(string msg);
@@ -25,6 +32,10 @@ public:
     //IO
     static bool runCmd(string cmd);
     static bool runCmd(string cmd, vector<string> * outputBuffer);
+
+    static void flushCmdQueue(vector<string> &queue);
+    static void pushCmdQueue(string cmd, vector<string> &queue);
+
     static void readFile(string filePath, vector<string> & buffer);
     static bool markLink(string sourcePath, string targetPath);
     static vector<string> getFolderList(string sourcePath);
@@ -33,4 +44,12 @@ public:
     static string SubString(string str, int start, int end);
     static string SubString(string str, int start);
     static string fixPath(string path);
+
+    static bool runCmdAsync(string cmd);
+
+    static chrono::duration<double> getElaspedTime();
+
+    static double getElaspedTimeSeconds();
+
+    static string truncateDouble(double value, int decimal);
 };
