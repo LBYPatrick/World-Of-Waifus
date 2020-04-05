@@ -9,19 +9,18 @@
 #define DEBUG_CMDOUT false
 #define READ_BUFFER_SIZE (16 * 1024) //16K
 
-using namespace std;
-
+#include <filesystem>
 #include <vector>
 #include <string>
 #include <array>
 #include <cstdlib>
-#include <cstdio>
 #include <cstring>
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <chrono>
 #include <iomanip>
+#include <thread>
 
 #ifdef _WIN32
 
@@ -29,3 +28,7 @@ using namespace std;
 #define pclose _pclose
 
 #endif
+
+using namespace std;
+
+namespace fs = std::filesystem;

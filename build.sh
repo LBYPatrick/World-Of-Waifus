@@ -1,0 +1,1 @@
+g++ -std=c++17 -static src/*.cpp -o bin/World-Of-Waifus.exe
