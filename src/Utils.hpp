@@ -26,7 +26,7 @@ public:
     static bool runCmd(string cmd);
     static bool runCmd(string cmd, vector<string> * outputBuffer);
     static void readFile(string filePath, vector<string> & buffer);
-    static bool markLink(string & sourcePath, string & targetPath);
+    static bool markLink(string sourcePath, string targetPath);
     static vector<string> getFolderList(string sourcePath);
 
     //Misc

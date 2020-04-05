@@ -20,6 +20,7 @@
 #include <fstream>
 #include <chrono>
 #include <iomanip>
+#include <thread>
 
 #ifdef _WIN32
 

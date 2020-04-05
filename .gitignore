@@ -33,3 +33,7 @@
 
 #CMake
 cmake-build-debug/
+
+#Temp Files
+.github/
+.idea/

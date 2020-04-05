@@ -56,25 +56,39 @@ bool Utils::runCmd(string cmd, vector<string> * outputBuffer) {
 	return true;
 }
 
-void Utils::markLink(string & entryPath, string &sourcePath, string &targetPath) {
+void Utils::markLink(string & entryPath,string &sourcePath, string &targetPath) {
     for(auto & i : fs::directory_iterator(sourcePath)) {
 
         int len = entryPath.length();
 
-        string source = i.path().u8string();
-        string target = targetPath + SubString(source,len);
+        string source = fixPath(i.path().u8string());
+        string target = fixPath(targetPath + SubString(source,len));
 
-        if(!fs::exists(target)) print(source + ", " + target + "\n");
+        if(!fs::exists(target) && !i.is_directory()) {
+
+            thread([&] {
+                runCmd("mklink /h " + target + " " + source);
+                //print(source + ", " + target + "\n");
+            }).join();
+        }
+
 
         //If the current one is a directory, recursively do it as well
         if(i.is_directory()) {
             string path = i.path().u8string();
+
+            if(!fs::exists(target)) {
+                fs::create_directory(target);
+            }
+
             markLink(entryPath,path,targetPath);
         }
     }
 }
 
-bool Utils::markLink(string & sourcePath, string & targetPath) {
+bool Utils::markLink(string sourcePath, string targetPath) {
+
+    sourcePath = fixPath(sourcePath);
 
     if(fs::exists(sourcePath)) {
         markLink(sourcePath, sourcePath, targetPath);
@@ -84,6 +98,8 @@ bool Utils::markLink(string & sourcePath, string & targetPath) {
 }
 
 vector<string> Utils::getFolderList(string sourcePath) {
+
+    sourcePath = fixPath(sourcePath);
 
     vector<string> r;
 
@@ -116,15 +132,23 @@ void Utils::readFile(string filePath, vector<string> & buffer) {
 
 string Utils::fixPath(string path) {
 
-    string out;
+    string out = path;
 
 #ifdef _WIN32
-
+    for(int i = 0; i < out.length(); ++i) {
+        if(out[i] == '/') {
+            out[i] = '\\';
+        }
+    }
 #else
-
+    for(int i = 0; i < out.length(); ++i) {
+        if(out[i] == '\\') {
+            out[i] = '/';
+        }
+    }
 
 #endif
-    return string();
+    return out;
 }
 string Utils::SubString(string str, int start) {
     return SubString(std::move(str), start, str.length() - 1);
