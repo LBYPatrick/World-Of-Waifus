@@ -29,6 +29,14 @@
 
 #endif
 
+#define IS_DEBUG false
+
 using namespace std;
 
 namespace fs = std::filesystem;
+namespace timer = std::chrono;
+
+struct ThreadHolder {
+    thread t;
+    bool & isDone;
+};
