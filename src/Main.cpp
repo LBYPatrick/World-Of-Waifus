@@ -84,6 +84,5 @@ int main(int argc, char *const argv[]) {
 
     Utils::printLn(Utils::truncateDouble(Utils::getElaspedTimeSeconds(), 2) + "s  " + "All done.");
 
-    system("pause");
     return 0;
 }
