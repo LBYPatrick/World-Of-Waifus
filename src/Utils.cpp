@@ -4,13 +4,13 @@ Utils *Utils::instance = 0;
 
 Utils::Utils() {
     std::ios_base::sync_with_stdio(false);
-    current_time = new timer::time_point<std::chrono::system_clock>();
-    *current_time = timer::system_clock::now();
+    start_time = timer::time_point<std::chrono::system_clock>();
+    start_time = timer::system_clock::now();
 }
 
 timer::duration<double> Utils::getElaspedTime() {
 
-    return timer::system_clock::now() - (*(getInstance()->current_time));
+    return timer::system_clock::now() - (getInstance()->start_time);
 }
 
 double Utils::getElaspedTimeSeconds() {
@@ -32,6 +32,10 @@ string Utils::truncateDouble(double value, int decimal) {
     return out.substr(0, out.length() - (6 - decimal));
 }
 
+string Utils::getPrintableTime() {
+    return truncateDouble(getElaspedTimeSeconds(),2) + "s";
+}
+
 Utils * Utils::getInstance() {
 
     if(!instance) {
@@ -43,13 +47,6 @@ Utils * Utils::getInstance() {
 
 bool Utils::runCmd(string cmd) {
     return runCmd(std::move(cmd), nullptr);
-}
-
-bool Utils::runCmdAsync(string cmd) {
-
-    system(("cmd /q /c \"" + cmd + "\"").c_str());
-
-    return true;
 }
 
 bool Utils::runCmd(string cmd, vector<string> * outputBuffer) {
@@ -99,7 +96,7 @@ bool Utils::runCmd(string cmd, vector<string> * outputBuffer) {
 	return true;
 }
 
-void Utils::markLink(string & entryPath,string &sourcePath, string &targetPath, vector<string> & queue) {
+void Utils::markLink(string & entryPath,string &sourcePath, string &targetPath) {
     for(auto & i : fs::directory_iterator(sourcePath)) {
             int len = entryPath.length();
 
@@ -108,10 +105,8 @@ void Utils::markLink(string & entryPath,string &sourcePath, string &targetPath, 
 
             if(!fs::exists(target) && !i.is_directory()) {
 
-                //pushCmdQueue("copy " + source  + " " + target,queue);
-                pushCmdQueue("mklink /h " + target + " " + source,queue);
+                fs::create_hard_link(source,target);
             }
-
 
             //If the current one is a directory, recursively do it as well
             if(i.is_directory()) {
@@ -120,7 +115,7 @@ void Utils::markLink(string & entryPath,string &sourcePath, string &targetPath, 
                     fs::create_directory(target);
                 }
 
-                markLink(entryPath,source,targetPath,queue);
+                markLink(entryPath,source,targetPath);
             }
     }
 }
@@ -129,11 +124,8 @@ bool Utils::markLink(string sourcePath, string targetPath) {
 
     sourcePath = fixPath(sourcePath);
 
-    vector<string> queue;
-
     if(fs::exists(sourcePath)) {
-        markLink(sourcePath, sourcePath, targetPath,queue);
-        flushCmdQueue(queue);
+        markLink(sourcePath, sourcePath, targetPath);
         return true;
     }
     return false;

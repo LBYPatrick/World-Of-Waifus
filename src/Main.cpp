@@ -1,17 +1,18 @@
 #include "Includes.hpp"
 #include "Utils.hpp"
+#include "Thread.hpp"
 
 using namespace std;
 
 string getModPath() {
 
-    if(fs::exists("bin64/paths.xml")) {
+    if (fs::exists("bin64/paths.xml")) {
         ifstream i("bin64/paths.xml");
 
         string buffer;
-        while(getline(i,buffer)) {
-            if(buffer.find("res_mods") != string::npos) {
-                return Utils::SubString(buffer,buffer.find("<Path>") + 9,buffer.find("</Path>") - 1);
+        while (getline(i, buffer)) {
+            if (buffer.find("res_mods") != string::npos) {
+                return Utils::SubString(buffer, buffer.find("<Path>") + 9, buffer.find("</Path>") - 1);
                 break;
             }
         }
@@ -22,67 +23,51 @@ string getModPath() {
 
 int main(int argc, char *const argv[]) {
 
+    vector<Thread> threadPool;
 
-    vector<ThreadHolder> threadPool;
     //Get WOWS Mod Path
-
     string modPath = getModPath();
 
-    if(modPath.length() == 0) {
-        Utils::printLn("Failed to Locate paths.xml!");
+    if (modPath.length() == 0) {
+        Utils::printLn("Failed to find valid paths.xml!");
         return 1;
     }
 
     //Get Mods List & Load
-    if(fs::exists("mods")) {
+    if (fs::exists("mods")) {
+
+        //Create res_mods/(version_number) folder user accidentally deleted it before
+        if(!fs::exists(modPath)) {
+            fs::create_directory(modPath);
+        }
 
         int numMods = Utils::getFolderList("mods").size();
 
-        for(auto & i : fs::directory_iterator("mods")) {
+        Utils::printLn(Utils::getPrintableTime() + " " + to_string(numMods) + " mods found. Start Working.");
 
-            bool isDone = false;
+        for (auto &i : fs::directory_iterator("mods")) {
 
             string source = i.path().u8string(),
                     target = modPath;
 
-            Utils::printLn(Utils::truncateDouble(Utils::getElaspedTimeSeconds(), 2)
-                           + "s  "
-                           + "Mounting "
-                           + Utils::SubString(source, source.rfind("\\") + 1)
-                           + ".");
 
-
-            /*
-            thread t([&] {
-
+            threadPool.push_back(Thread(thread([&] {
                 Utils::markLink(source, target);
+                Utils::printLn(Utils::getPrintableTime()
+                               + " "
+                               + "Finished Mounting "
+                               + Utils::SubString(source, source.rfind("\\") + 1)
+                               + ".");
+            })));
 
-                isDone = true;
-            });
-             */
-
-            threadPool.push_back({thread([&] {Utils::markLink(source, target);isDone = true;}),isDone});
-
-            threadPool.back().t.join();
+            threadPool.back().run();
 
         }
     }
 
-    while(true) {
+    Utils::printLn( "\n" + Utils::getPrintableTime() + " " + "All done. This window will close shortly.");
 
-        bool isAllDone = true;
-
-        for(auto & i : threadPool) {
-            if(i.isDone == false) {
-                isAllDone = false;
-                break;
-            }
-        }
-
-        if(isAllDone) break;
-    }
-
-    Utils::printLn(Utils::truncateDouble(Utils::getElaspedTimeSeconds(), 2) + "s  " + "All done.");
+    std::this_thread::sleep_for(2s);
 
     return 0;
 }

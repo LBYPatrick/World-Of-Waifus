@@ -9,4 +9,4 @@ add_executable(World_Of_Waifus
         src/Includes.hpp
         src/Main.cpp
         src/Utils.cpp
-        src/Utils.hpp)
+        src/Utils.hpp src/Thread.cpp src/Thread.hpp)

@@ -1,3 +1,4 @@
+#pragma once
 #include "Includes.hpp"
 
 using namespace std;
@@ -14,11 +15,11 @@ private:
 
     static Utils * instance;
 
-    std::chrono::time_point<std::chrono::system_clock> * current_time;
+    std::chrono::time_point<std::chrono::system_clock> start_time;
 
     vector<string> cmdQueue;
 
-    static void markLink(string &entryPath, string &sourcePath, string &targetPath, vector<string> & queue);
+    static void markLink(string &entryPath, string &sourcePath, string &targetPath);
 public:
 
     static void pushCmdQueue(string cmd);
@@ -45,11 +46,9 @@ public:
     static string SubString(string str, int start);
     static string fixPath(string path);
 
-    static bool runCmdAsync(string cmd);
-
     static chrono::duration<double> getElaspedTime();
 
     static double getElaspedTimeSeconds();
-
     static string truncateDouble(double value, int decimal);
+    static string getPrintableTime();
 };
