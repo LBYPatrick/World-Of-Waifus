@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/Code/World-Of-Waifus/src/Includes.hpp
+vector
+-
+string
+-
+array
+-
+cstdlib
+-
+cstdio
+-
+cstring
+-
+cmath
+-
+iostream
+-
+fstream
+-
+chrono
+-
+iomanip
+-
+
+D:/Code/World-Of-Waifus/src/Utils.cpp
+Utils.hpp
+D:/Code/World-Of-Waifus/src/Utils.hpp
+utility
+-
+
+D:/Code/World-Of-Waifus/src/Utils.hpp
+Includes.hpp
+D:/Code/World-Of-Waifus/src/Includes.hpp
+
