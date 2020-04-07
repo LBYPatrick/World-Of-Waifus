@@ -37,3 +37,4 @@ cmake-build-debug/
 #Temp Files
 .github/
 .idea/
+src/.vscode/

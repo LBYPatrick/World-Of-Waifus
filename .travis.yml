@@ -1,6 +1,0 @@
-language: cpp
-dist: bionic
-compiler: gcc
-
-script: 
-  - g++ src/*.cpp -std=c++17 -o World-Of-Waifus
