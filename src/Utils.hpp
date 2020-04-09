@@ -40,10 +40,12 @@ public:
     static void readFile(string filePath, vector<string> & buffer);
     static bool markLink(string sourcePath, string targetPath);
     static vector<string> getFolderList(string sourcePath);
+    static void createDirectory(string path);
 
     //Misc
     static string SubString(string str, int start, int end);
     static string SubString(string str, int start);
+    static string fixPath(string path, bool isLinux);
     static string fixPath(string path);
 
     static chrono::duration<double> getElaspedTime();

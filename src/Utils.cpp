@@ -166,23 +166,11 @@ void Utils::readFile(string filePath, vector<string> & buffer) {
 
 string Utils::fixPath(string path) {
 
-    string out = path;
-
 #ifdef _WIN32
-    for(int i = 0; i < out.length(); ++i) {
-        if(out[i] == '/') {
-            out[i] = '\\';
-        }
-    }
+    return fixPath(path,false);
 #else
-    for(int i = 0; i < out.length(); ++i) {
-        if(out[i] == '\\') {
-            out[i] = '/';
-        }
-    }
-
+    return fixPath(path,true);
 #endif
-    return out;
 }
 string Utils::SubString(string str, int start) {
     return SubString(std::move(str), start, str.length() - 1);
@@ -239,4 +227,52 @@ void Utils::flushCmdQueue(vector<string> & queue) {
 
 void Utils::flushCmdQueue() {
    flushCmdQueue(getInstance()->cmdQueue);
+}
+
+void Utils::createDirectory(string path) {
+
+    path = fixPath(path,true);
+
+    vector<int> slashIndex;
+
+    for(int i = 0; i < path.length(); ++i) {
+        if(path[i] == '/') {
+            if(i == 0 || i == path.length() - 1) {
+                continue;
+            }
+            else {
+                slashIndex.push_back(i);
+            }
+        }
+    }
+
+    for(auto & i : slashIndex) {
+        string tempPath = SubString(path,0,i);
+
+        if(!fs::exists(tempPath)) fs::create_directory(tempPath);
+    }
+
+    if(!fs::exists(path)) fs::create_directory(path);
+
+    return;
+
+}
+
+string Utils::fixPath(string path, bool isLinux) {
+
+    if(!isLinux) {
+        for (int i = 0; i < path.length(); ++i) {
+            if (path[i] == '/') {
+                path[i] = '\\';
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < path.length(); ++i) {
+            if (path[i] == '\\') {
+                path[i] = '/';
+            }
+        }
+    }
+    return path;
 }

@@ -36,10 +36,13 @@ int main(int argc, char *const argv[]) {
     //Get Mods List & Load
     if (fs::exists("mods")) {
 
-        //Create res_mods/(version_number) folder user accidentally deleted it before
-        if(!fs::exists(modPath)) {
-            fs::create_directory(modPath);
+        //Purge res_mods/<version_number> and create a new one
+
+        if(fs::exists(modPath)) {
+            fs::remove_all(modPath);
         }
+
+        Utils::createDirectory(modPath);
 
         int numMods = Utils::getFolderList("mods").size();
 

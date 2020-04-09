@@ -1,11 +1,5 @@
 #pragma once
 
-#define SOFTWARE_VERSION "0.0.1"
-#define _CRT_SECURE_NO_WARNINGS
-
-#define DEBUG_CONFIG false
-#define DEBUG_IO false
-#define DEBUG_ANALYZER false
 #define DEBUG_CMDOUT false
 #define READ_BUFFER_SIZE (16 * 1024) //16K
 
